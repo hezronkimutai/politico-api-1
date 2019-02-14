@@ -1,25 +1,34 @@
 import psycopg2
-# import instance.config import app_config
 from werkzeug.security import generate_password_hash
+import sys
+import os
+import logging
+import psycopg2
+from psycopg2.extras import RealDictCursor as dict_cursor
+from instance.config import app_config
 
-# host = 'localhost'
-# user = 'nevooronni'
-# port = 5000
-# password = 'speeds01'
-# dbname = 'myblog'
-# connection_url = "dbname='myblog' host='127.0.0.1' port='5000' user='nevooronni' password='speeds01'"
-
+config_name = os.getenv('APP_SETTINGS')
+    
 # config = app_config[config_name]
 
 # database = os.getenv('DATABASE_NAME')
 # user = config.DATABASE_USERNAME
 # password = config.DATABASE_PASSWORD
 # host = config.DATABASE_HOST
-# port = config.DATABASE_PORT
+# ort = config.DATABASE_PORT
 
 # DSN = 'dbname={} user={} password={} host={} port={}'.format(
 #   database, user, password, host, port
 # )
+
+# # try:
+#   print(DSN) 
+      
+#   conn = psycopg2.connect(DSN)
+#   cur = conn.cursor()
+
+# except (Exception, psycopg2.DatabaseError) as error:
+#   print(error)
 
 # uri = DSN
 #return connections
@@ -67,60 +76,77 @@ def destroydb():
 #contains all talbes creation queiries
 def create_tables():
   users = """ CREATE TABLE IF NOT EXISTS users (
-    user_id serial PRIMARY KEY NOT NULL,
-    firstname character varying(50) NOT NULL,
-    lastname character varying(50) NOT NULL,
-    othername character varying(50),
-    password character varying(50) NOT NULL,
-    phoneNumber integer NOT NULL,
-    email character varying(50) NOT NULL,
-    passportUrl character varying(50), 
-    isAdmin boolean
+    id SERIAL PRIMARY KEY,
+    firstname VARCHAR(20) NOT NULL,
+    lastname VARCHAR(20) NOT NULL,
+    othername VARCHAR(20),
+    email VARCHAR(30) NOT NULL,
+    phoneNumber VARCHAR(24) NOT NULL,
+    password VARCHAR(1000) NOT NULL,
+    passportUrl VARCHAR(256),
+    isAdmin BOOLEAN DEFAULT FALSE,
+    isPolitician BOOLEAN DEFAULT FALSE
   ); """
 
   parties = """ CREATE TABLE IF NOT EXISTS parties (
     id serial PRIMARY KEY NOT NULL,
-    name character varying(50) NOT NULL,
-    hqAddress character varying(50) NOT NULL, 
-    logoUrl character varying(50)
+    name VARCHAR(20) NOT NULL,
+    hqAddress VARCHAR(24) NOT NULL, 
+    logoUrl VARCHAR(256) NULL
   ); """
 
   offices = """ CREATE TABLE IF NOT EXISTS offices (
     id serial PRIMARY KEY NOT NULL,
-    type character varying(50) NOT NULL,
-    name character varying(50) NOT NULL 
+    type VARCHAR(20) NOT NULL,
+    name VARCHAR(20) NOT NULL 
   ); """
 
   queries = [users, parties, offices]
   return queries
 
-def drop_tables():
-  """
-    function for drop database tables
-  """
 
-  drop_users = """ DROP TABLE IF EXISTS users """
-  drop_parties = """ DROP TABLE IF EXISTS parties """
-  drop_offices = """ DROP TABLE IF EXISTS offices """
-
-  return [drop_books, drop_users]
-
-def create_admin(conn):
+def drop_all_tables():
   """ 
-    Function to insert super admin into the db 
+    Deletes all tables in the app 
   """
 
-  user_query = "SELECT * FROM users WHERE username = 'nevooronni'"
-  cur.execute(user_query)
-  result = cur.fetchone()
+  tables_to_drop = drop_tables()
+  for query in tables_to_drop:
+    cur.execute(query)
+    
+  conn.commit
 
-  if not result:
-    cur = conn.cursor()
-    cur.execute("INSERT INTO users (firstname, lastname, username, phoneNumber, email,\
-      password, admin) VALUES ('Neville', 'Oronni', 'Gerald', '0712345678',\
-      'nevooronni@gmail.com', '{}', True)\
-      ".format(generate_password_hash('abc1$#De0')))
+def fetch_one(query):
+  """ 
+    retreives a single row of data from a table 
+  """
+  self.cur.execute(query)
+  fetchone = cur.fetchone()
+  return fetchone
 
-    conn.commit()
+def save_updates(query):
+  """ 
+    saves data passed as a query to the stated table
+  """
+  cur.execute(query)
+  conn.commit()
+
+def fetch_all(query):
+  """ 
+    fetches all data stored
+  """
+
+  cur.execute(query)
+  all_data = cur.fetchall()
+  return all_data
+
+def insert(query):
+  """
+    funcition that inserts news items into a table
+  """
+  cur.execute(query)
+  data = cur.fetch_one()
+  conn.commit()
+  return data
 
   

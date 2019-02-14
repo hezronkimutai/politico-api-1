@@ -12,7 +12,7 @@ from app.api.v1.views.user_view import index_view, signup_auth_view, signin_auth
 from app.api.v1.views.party_view import create_party_view, fetch_party_view, fetch_all_parties_view, update_party_view,delete_party_view
 from app.api.v1.views.office_view import create_office_view, fetch_office_view, fetch_all_offices_view, delete_office_view
 from database.database import DatabaseConnection
-from app.api.v2.views.user_view import index_view
+from app.api.v2.views.user_view import index_view, signup_auth_view, token_view
 
 
 def create_app(config_name):
@@ -24,7 +24,6 @@ def create_app(config_name):
   app.config.from_object(app_config[config_name])
   app.config.from_pyfile('config.py')
   app.secret_key = os.getenv('SECRET_KEY')
-  dsn = app_config[config_name].DATABASE_DSN
   
   #Initialize JWT
   jwt = JWTManager(app)
@@ -35,7 +34,8 @@ def create_app(config_name):
     return RevokedTokenModel().is_blacklisted(jti)
 
   #Initialize database
-  DatabaseConnection(dsn, config_name)
+  DatabaseConnection(config_name)
+  print(config_name)
   
   #register blueprint
   # app.register_blueprint(users_blueprint)
@@ -59,7 +59,8 @@ def create_app(config_name):
 
   #v2 method view routes
   app.add_url_rule('/api/v2/index', view_func=index_view, methods=['GET'])
-
+  app.add_url_rule('/api/v2/signup', view_func=signup_auth_view, methods=['POST'])
+  app.add_url_rule('/api/v2/refresh-token', view_func=token_view, methods=['POST'])
 
   return app
 

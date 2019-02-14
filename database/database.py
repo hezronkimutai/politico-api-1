@@ -6,7 +6,7 @@ import sys
 import os
 import logging
 import psycopg2
-from .database_config import create_tables, destroydb, create_admin
+from .database_config import create_tables, destroydb
 from psycopg2.extras import RealDictCursor as dict_cursor
 from instance.config import app_config
 
@@ -15,14 +15,14 @@ class DatabaseConnection:
     Handles the main connection to the database of the app setting 
   """
 
-  def __init__(self, dsn, config_name):
+  def __init__(self, config_name):
     """
       initialize the class instance to take a database url as a parameter
     """
 
     config = app_config[config_name]
 
-    database = os.getenv('DATABASE_NAME')
+    database = config.DATABASE_NAME
     user = config.DATABASE_USERNAME
     password = config.DATABASE_PASSWORD
     host = config.DATABASE_HOST
@@ -31,17 +31,36 @@ class DatabaseConnection:
     DSN = 'dbname={} user={} password={} host={} port={}'.format(
       database, user, password, host, port
     )
-
+        
     try:
-      print(DSN) 
-      
-      self.conn = psycopg2.connect(DSN)
-      self.cur = self.conn.cursor()
+      if config_name == 'testing':
+
+        database_test = config.DATABASE_TEST_NAME
+        DSN = 'dbname={} user={} password={} host={} port={}'.format(
+          database_test, user, password, host, port
+        )
+        print(DSN) 
+
+        self.conn = psycopg2.connect(DSN)
+        self.cur = self.conn.cursor()
+
+        self.drop_all_tables()
+        self.create_tables()
+        self.create_admin(self.conn)
+
+      else: 
+        print(DSN) 
+        
+        self.conn = psycopg2.connect(DSN)
+        self.cur = self.conn.cursor()
+
+        self.drop_all_tables()
+        self.create_tables()
 
     except (Exception, psycopg2.DatabaseError) as error:
-      print(error)
+      print("Database Error" + str(error))
 
-  def create_tables_and_admin(self):
+  def create_tables(self):
     """ 
       creates all tables 
     """
@@ -52,31 +71,32 @@ class DatabaseConnection:
       
     self.conn.commit()
     
-  def create_admin(self):
+  def create_admin(self, conn):
     """ 
       create admin after creating tables
     """
+    query = "INSERT INTO users (firstname, lastname, othername, phoneNumber, email,\
+      password, isAdmin, isPolitician) VALUES ('Neville', 'Oronni', 'Gerald', '0712345678',\
+      'nevooronni@gmail.com', 'abc1$#De0', True, False)"
 
-    create_admin()
+    self.cur.execute(query)
+    self.conn.commit()
 
-  def drop_all_tables(self):
-    """ 
-      Deletes all tables in the app 
+  def insert(self, query):
     """
+      funcition that inserts new items into a table
+    """
+    self.cur.execute(query)
+    data = self.cur.fetchone()
+    return data
 
-    tables_to_drop = drop_tables()
-    for query in tables_to_drop:
-      self.cur.execute(query)
-    
-    self.conn.commit
-
-  def fetch_single_data_row(self, query):
+  def fetch_one(self, query):
     """ 
       retreives a single row of data from a table 
     """
     self.cur.execute(query)
-    fetchedRow = cur.fetchone()
-    return fetchedRow
+    fetchone = self.cur.fetchone()
+    return fetchone
 
   def save_updates(self, query):
     """ 
@@ -91,5 +111,27 @@ class DatabaseConnection:
     """
 
     self.cur.execute(query)
-    all_data = cur.fetchall()
-    return all_data
+    fetch_all = self.cur.fetchall()
+    return fetch_all
+
+  def drop_tables(self):
+    """
+      function for drop database tables
+    """
+
+    drop_users = """ DROP TABLE IF EXISTS users """
+    drop_parties = """ DROP TABLE IF EXISTS parties """
+    drop_offices = """ DROP TABLE IF EXISTS offices """
+
+    return [drop_users, drop_parties, drop_offices]
+
+  def drop_all_tables(self):
+    """ 
+      Deletes all tables in the app 
+    """
+
+    tables_to_drop = self.drop_tables()
+    for query in tables_to_drop:
+      self.cur.execute(query)
+    
+    self.conn.commit

@@ -64,7 +64,7 @@ class TestUser(BaseTest):
 
     user = {}
 
-    res = self.client.post('/api/v1/signup', json=user, headers={'Content-Type': 'application/json'})
+    res = self.client.post('/api/v2/signup', json=user, headers={'Content-Type': 'application/json'})
     data = res.get_json()
 
     self.assertEqual(res.status_code, 400)
