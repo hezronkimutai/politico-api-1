@@ -45,7 +45,7 @@ class PolitcalOfficeAPI(MethodView):
     """ 
       Endpoint for fetching a specific office
     """
-
+    
     if not db.office_exists('id', office_id):
       abort(make_response(jsonify({
         'status': 404,

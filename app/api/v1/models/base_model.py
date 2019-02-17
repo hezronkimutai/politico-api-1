@@ -6,14 +6,6 @@ class Model(object):
     Base model class
   """
 
-  from datetime import datetime
-from ..utils.utils import generate_id
-
-class Model(object):
-  """
-    Base model class
-  """
-
   def __init__(self, collection):
     """
       initializes list of an object type
@@ -39,6 +31,21 @@ class Model(object):
     """
       method to find object item using key, value pair
     """
+    items = [item for item in self.collection if item[key] == value]
+    return items[0]
+
+  def fetch_all(self):
+    """
+      method to fetch all items objects
+    """
+    return self.collection
+
+  def delete(self, id):
+    """
+      method to delete item object
+    """
+    item = self.find('id', id)
+    self.collection.remove(item)
     items = [item for item in self.collection if item[key] == value]
     return items[0]
 

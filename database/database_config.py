@@ -104,6 +104,17 @@ def create_tables():
   queries = [users, parties, offices]
   return queries
 
+def drop_tables():
+  """
+    function for drop database tables
+  """
+
+  drop_users = """ DROP TABLE IF EXISTS users """
+  drop_parties = """ DROP TABLE IF EXISTS parties """
+  drop_offices = """ DROP TABLE IF EXISTS offices """
+
+  return [drop_books, drop_users]
+
 
 def drop_all_tables():
   """ 
