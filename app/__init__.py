@@ -1,7 +1,7 @@
 """create app"""
 
 import os
-from flask import Flask
+from flask import Flask, jsonify, Blueprint, make_response
 from instance.config import app_config
 from flask_jwt_extended import (JWTManager)
 from app.api.v1.models.token_model import RevokedTokenModel
@@ -13,6 +13,28 @@ from app.api.v1.views.party_view import create_party_view, fetch_party_view, fet
 from app.api.v1.views.office_view import create_office_view, fetch_office_view, fetch_all_offices_view, delete_office_view
 from database.database import DatabaseConnection
 from app.api.v2.views.user_view import index_view, signup_auth_view, token_view
+
+
+def page_not_found(e):
+  """
+    function that handles 404 error
+  """
+
+  return make_response(jsonify({
+    "status": "not found",
+    "message": "url does not exist"
+  }), 404)
+
+
+def method_not_allowed(e):
+  """
+    function that handles 405 error
+  """
+
+  return make_response(jsonify({
+    "status": "not found",
+    "message": "url does not exist"
+  }), 405)
 
 
 def create_app(config_name):
@@ -41,6 +63,9 @@ def create_app(config_name):
   # app.register_blueprint(users_blueprint)
   # app.register_blueprint(parties_blueprint)
   # app.register_blueprint(offices_blueprint)
+  #register blueprint error handler
+  app.register_error_handler(404, page_not_found)
+  app.register_error_handler(405, method_not_allowed)
 
   #v1 method view routes
   app.add_url_rule('/api/v1/index', view_func=index_view, methods=['GET'])
