@@ -142,7 +142,7 @@ class TestUser(BaseTest):
       'lastname': 'Chisora',
       'email': 'derrick@gmail.com',
       'password': 'abcD$234g',
-      'phoneNumber': '0725928106'  
+      'phoneNumber': '0725928106'
     }
 
     res = self.client.post('/api/v2/signup', json=user, headers={'Content-Type': 'applicatioin/json'})

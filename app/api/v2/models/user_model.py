@@ -16,11 +16,14 @@ class User(object):
     """
       method to save new user
     """
-    password = generate_password_hash(data['password'])
 
-    query = "INSERT INTO {} (firstname, lastname, password, phoneNumber, email) VALUES ('{}', '{}', '{}', '{}', '{}') RETURNING *".format(
+    password = generate_password_hash(data['password'])
+    data['isAdmin'] = False
+    data['isPolitician'] = False
+ 
+    query = "INSERT INTO {} (firstname, lastname, phoneNumber, email, password, isAdmin, isPolitician) VALUES ('{}', '{}', '{}', '{}', '{}') RETURNING *".format(
         table, data['firstname'], 
-        data['lastname'], data['password'], data['phoneNumber'], data['email']
+        data['lastname'], data['phoneNumber'], data['email'], data['password'], data['isAdmin'], data['isPolitician']
       )
 
     return DatabaseConnection(config_name).insert(query)

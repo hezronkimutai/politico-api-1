@@ -21,7 +21,7 @@ def page_not_found(e):
   """
 
   return make_response(jsonify({
-    "status": "not found",
+    "status": 404,
     "message": "url does not exist"
   }), 404)
 
@@ -32,8 +32,8 @@ def method_not_allowed(e):
   """
 
   return make_response(jsonify({
-    "status": "not found",
-    "message": "url does not exist"
+    "status": 405,
+    "message": "method not allowed"
   }), 405)
 
 

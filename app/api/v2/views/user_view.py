@@ -43,10 +43,11 @@ class UserSignupAPI(MethodView):
 
       new_user = db.save(data)
       result = UserSchema(exclude=['password']).dump(new_user).data
-      print(result)
+      print(str(new_user))
+
       # Generate access 
-      access_token = create_access_token(identity=new_user['id'], fresh=True)
-      refresh_token = create_refresh_token(identity=new_user['id'])
+      access_token = create_access_token(identity=new_user[0], fresh=True)
+      refresh_token = create_refresh_token(identity=new_user[0])
       return jsonify({
           'status': 201, 
           'data': [{
